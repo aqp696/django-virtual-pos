@@ -1030,7 +1030,7 @@ class VPOSCeca(VirtualPointOfSale):
         dlprint("\texponente {0}".format(self.exponente))
         dlprint("\treferencia {0}".format(self.parent.operation.confirmation_code))
         dlprint("FIRMA {0}".format(signature))
-        return hashlib.sha1(signature).hexdigest()
+        return hashlib.sha256(signature).hexdigest()
 
 
 ########################################################################################################################
