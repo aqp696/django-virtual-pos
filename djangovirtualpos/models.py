@@ -951,7 +951,7 @@ class VPOSCeca(VirtualPointOfSale):
         """Calcula la firma a incorporar en el formulario de pago"""
         self.__init_encryption_key__()
         dlprint("Clave de cifrado es {0}".format(self.encryption_key))
-        signature = "{encryption_key}{merchant_id}{acquirer_bin}{terminal_id}{num_operacion}{importe}{tipo_moneda}{exponente}SHA1{url_ok}{url_nok}".format(
+        signature = "{encryption_key}{merchant_id}{acquirer_bin}{terminal_id}{num_operacion}{importe}{tipo_moneda}{exponente}SHA2{url_ok}{url_nok}".format(
             encryption_key=self.encryption_key,
             merchant_id=self.merchant_id,
             acquirer_bin=self.acquirer_bin,
@@ -974,7 +974,34 @@ class VPOSCeca(VirtualPointOfSale):
         dlprint("\turl_ok {0}".format(self.parent.operation.url_ok))
         dlprint("\turl_nok {0}".format(self.parent.operation.url_nok))
         dlprint("FIRMA {0}".format(signature))
-        return hashlib.sha1(signature).hexdigest()
+        return hashlib.sha256(signature).hexdigest()
+
+    def _sending_refund_signature(self):
+        """Calcula la firma a incorporar en el formulario de pago"""
+        self.__init_encryption_key__()
+        dlprint("Clave de cifrado es {0}".format(self.encryption_key))
+        signature = "{encryption_key}{merchant_id}{acquirer_bin}{terminal_id}{num_operacion}{importe}{tipo_moneda}{exponente}{referencia}SHA2".format(
+            encryption_key=self.encryption_key,
+            merchant_id=self.merchant_id,
+            acquirer_bin=self.acquirer_bin,
+            terminal_id=self.terminal_id,
+            num_operacion=self.parent.operation.operation_number,
+            importe=self.importe,
+            tipo_moneda=self.tipo_moneda,
+            exponente=self.exponente,
+            referencia=self.referencia,
+        )
+        signature = "{signature}SHA2".format(signature=signature)
+        dlprint("\tencryption_key {0}".format(self.encryption_key))
+        dlprint("\tmerchant_id {0}".format(self.merchant_id))
+        dlprint("\tacquirer_bin {0}".format(self.acquirer_bin))
+        dlprint("\tterminal_id {0}".format(self.terminal_id))
+        dlprint("\tnum_operacion {0}".format(self.parent.operation.operation_number))
+        dlprint("\timporte {0}".format(self.importe))
+        dlprint("\ttipo_moneda {0}".format(self.tipo_moneda))
+        dlprint("\texponente {0}".format(self.exponente))
+        dlprint("FIRMA {0}".format(signature))
+        return hashlib.sha256(signature).hexdigest()
 
     ####################################################################
     ## Generador de firma para la verificación
