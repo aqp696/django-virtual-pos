@@ -703,7 +703,7 @@ class VPOSCeca(VirtualPointOfSale):
     # Tipo de pago que soporta
     pago_soportado = "SSL"
     # Cifrado que será usado en la generación de la firma
-    cifrado = "SHA1"
+    cifrado = "SHA2"
     # Campo específico para realizar el pago, actualmente será 2
     exponente = "2"
     # Identifica el tipo de moneda
