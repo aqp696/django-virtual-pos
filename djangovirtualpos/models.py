@@ -689,8 +689,8 @@ class VPOSCeca(VirtualPointOfSale):
 
     # El TPV de CECA consta de dos entornos en funcionamiento, uno para pruebas y otro para producción
     CECA_URL = {
-        "production": "https://pgw.ceca.es/cgi-bin/tpv",
-        "testing": "http://tpv.ceca.es:8000/cgi-bin/tpv"
+        "production": u'https://comercios.ceca.es/webapp/ConsTpvVirtWeb/ConsTpvVirtS',
+        "testing": u'https://democonsolatpvvirtual.ceca.es/webapp/ConsTpvVirtWeb/ConsTpvVirtS'
     }
 
     # Los códigos de idioma a utilizar son los siguientes
