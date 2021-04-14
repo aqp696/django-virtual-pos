@@ -931,10 +931,93 @@ class VPOSCeca(VirtualPointOfSale):
 
     ####################################################################
     ## Paso R1. (Refund) Configura el TPV en modo devolución
-    ## TODO: No implementado
     def refund(self, operation_sale_code, refund_amount, description):
-        raise VPOSOperationNotImplemented(u"No se ha implementado la operación de devolución particular para CECA.")
+        self.url = self.CECA_URL[self.parent.environment]
 
+        # IMPORTANTE: Este es el código de operación para hacer devoluciones.
+        self.transaction_type = 3
+
+        # Formato para Importe: según redsys, ha de tener un formato de entero positivo, con las dos últimas posiciones
+        # ocupadas por los decimales
+        self.importe = "{0:.2f}".format(float(refund_amount)).replace(".", "")
+
+        # Idioma de la pasarela, por defecto es español, tomamos
+        # el idioma actual y le asignamos éste
+        self.idioma = self.IDIOMAS["es"]
+        lang = translation.get_language()
+        if lang in self.IDIOMAS:
+            self.idioma = self.IDIOMAS[lang]
+
+        self.referencia = self.parent.operation.payment.confirmation_code
+
+        order_data = {
+            # Identifica al comercio, será facilitado por la caja
+            "modo": "anularOperacionExt",
+            "MerchantID": self.merchant_id,
+            # Identifica a la caja, será facilitado por la caja
+            "AcquirerBIN": self.acquirer_bin,
+            # Identifica al terminal, será facilitado por la caja
+            "TerminalID": self.terminal_id,
+            # Cadena de caracteres calculada por el comercio
+            "Firma": self._sending_refund_signature(),
+            # Tipo de cifrado que se usará para el cifrado de la firma
+            "Cifrado": self.cifrado,
+            # Identifica el número de pedido, factura, albarán, etc
+            "Num_operacion": self.parent.operation.operation_number,
+            # Importe de la operación sin formatear. Siempre será entero con los dos últimos dígitos usados para los centimos
+            "Importe": self.importe,
+            # Codigo ISO-4217 correspondiente a la moneda en la que se efectúa el pago
+            "TipoMoneda": self.tipo_moneda,
+            # Actualmente siempre será 2
+            "Exponente": self.exponente,
+            # Código de idioma
+            "Idioma": self.idioma,
+            # Opcional. Campo reservado para mostrar información en la página de pago
+            "Descripcion": self.parent.operation.description,
+            "Referencia": self.referencia,
+        }
+
+        headers = {'enctype': 'application/x-www-form-urlencoded'}
+
+        # Realizamos petición POST con los datos de la operación y las cabeceras necesarias.
+        refund_html_request = requests.post(self.url, data=order_data, headers=headers)
+
+        # En caso de tener una respuesta 200
+        if refund_html_request.status_code == 200:
+
+            # Iniciamos un objeto BeautifulSoup (para poder leer los elementos del DOM del HTML recibido).
+            xml = BeautifulSoup(refund_html_request.content, "xml")
+            #import xml.etree.ElementTree as ElementTree
+            #transaction_xml = ElementTree.fromstring(refund_html_request.content)
+            #refund_resultado = transaction_xml.find('RESULTADOOK').text
+
+            # Buscamos elementos significativos del DOM que nos indiquen si la operación se ha realizado correctamente o no.
+            refund_operacion_ok = xml.find(u'TRANSACCION').attrs[u'valor'] == u'OK'
+            refund_operacion_ko = xml.find(u'TRANSACCION').attrs[u'valor'] == u'ERROR'
+
+            # Cuando en el DOM del documento HTML aparece un mensaje de error.
+            if refund_operacion_ko:
+                dlprint(refund_operacion_ok)
+                dlprint(u'Error realizando la operación')
+                status = False
+
+            # Cuando en el DOM del documento HTML aparece un mensaje de ok.
+            elif refund_operacion_ok:
+                dlprint(u'Operación realizada correctamente')
+                dlprint(refund_operacion_ok)
+                status = True
+
+            # No aparece mensaje de error ni de ok
+            else:
+                raise VPOSOperationException("La resupuesta HTML con la pantalla de devolución "
+                                             "no muestra mensaje informado de forma expícita "
+                                             "si la operación se produce con éxito o error. Revisar método 'VPOSRedsys.refund'.")
+
+        # Respuesta HTTP diferente a 200
+        else:
+            status = False
+
+        return status
     ####################################################################
     ## Paso R2.a. Respuesta positiva a confirmación asíncrona de refund
     def refund_response_ok(self, extended_status=""):
