@@ -781,7 +781,7 @@ class VPOSCeca(VirtualPointOfSale):
     ## Paso 1.3. Obtiene los datos de pago
     ## Este método será el que genere los campos del formulario de pago
     ## que se rellenarán desde el cliente (por Javascript)
-    def getPaymentFormData(self):
+    def getPaymentFormData(self, reference_number=None):
         data = {
             # Identifica al comercio, será facilitado por la caja
             "MerchantID": self.merchant_id,
