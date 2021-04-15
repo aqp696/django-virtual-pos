@@ -1079,7 +1079,6 @@ class VPOSCeca(VirtualPointOfSale):
             exponente=self.exponente,
             referencia=self.referencia,
         )
-        signature = "{signature}SHA2".format(signature=signature)
         dlprint("\tencryption_key {0}".format(self.encryption_key))
         dlprint("\tmerchant_id {0}".format(self.merchant_id))
         dlprint("\tacquirer_bin {0}".format(self.acquirer_bin))
