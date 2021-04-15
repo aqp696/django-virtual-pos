@@ -689,6 +689,11 @@ class VPOSCeca(VirtualPointOfSale):
 
     # El TPV de CECA consta de dos entornos en funcionamiento, uno para pruebas y otro para producción
     CECA_URL = {
+        "production": "https://pgw.ceca.es/tpvweb/tpv/compra.action",
+        "testing":"https://tpv.ceca.es/tpvweb/tpv/compra.action"
+    }
+
+    CECA_REFUND_URL = {
         "production": u'https://comercios.ceca.es/webapp/ConsTpvVirtWeb/ConsTpvVirtS',
         "testing": u'https://democonsolatpvvirtual.ceca.es/webapp/ConsTpvVirtWeb/ConsTpvVirtS'
     }
@@ -932,7 +937,7 @@ class VPOSCeca(VirtualPointOfSale):
     ####################################################################
     ## Paso R1. (Refund) Configura el TPV en modo devolución
     def refund(self, operation_sale_code, refund_amount, description):
-        self.url = self.CECA_URL[self.parent.environment]
+        self.url = self.CECA_REFUND_URL[self.parent.environment]
 
         # IMPORTANTE: Este es el código de operación para hacer devoluciones.
         self.transaction_type = 3
