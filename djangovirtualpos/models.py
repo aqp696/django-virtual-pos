@@ -140,6 +140,9 @@ class VPOSPaymentOperation(models.Model):
     virtual_point_of_sale = models.ForeignKey("VirtualPointOfSale", parent_link=True, related_name="payment_operations", null=False)
     environment = models.CharField(max_length=255, choices=VIRTUALPOS_STATE_TYPES, default="", blank=True, verbose_name="Entorno del TPV")
 
+    aplicacion = models.CharField(max_length=255, null=True, blank=True)
+    modelo = models.CharField(max_length=255, null=True, blank=True)
+
     @property
     def vpos(self):
         return self.virtual_point_of_sale
