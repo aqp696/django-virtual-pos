@@ -1005,8 +1005,10 @@ class VPOSCeca(VirtualPointOfSale):
 
             # Cuando en el DOM del documento HTML aparece un mensaje de error.
             if refund_operacion_ko:
-                dlprint(refund_operacion_ok)
-                dlprint(u'Error realizando la operación')
+                error_msg = xml.find(u'ERROR_DESC').get_text()
+                dlprint(refund_operacion_ko)
+                dlprint(u'Error realizando la operación.')
+                dlprint(error_msg)
                 status = False
 
             # Cuando en el DOM del documento HTML aparece un mensaje de ok.
