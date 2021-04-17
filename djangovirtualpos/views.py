@@ -61,6 +61,9 @@ def set_payment_attributes(request, sale_model, sale_ok_url, sale_nok_url, refer
     try:
         # Operation number generation and assignement
         operation_number = virtual_point_of_sale.setupPayment()
+        virtual_point_of_sale.operation.modelo = sale_model._meta.model_name
+        virtual_point_of_sale.operation.aplicacion = sale_model._meta.app_label
+        virtual_point_of_sale.operation.save()
         # Update operation number of sale
         sale.operation_number = operation_number
         sale_model.objects.filter(id=sale.id).update(operation_number=operation_number)
