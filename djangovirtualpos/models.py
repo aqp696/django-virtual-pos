@@ -697,8 +697,8 @@ class VPOSCeca(VirtualPointOfSale):
     }
 
     CECA_REFUND_URL = {
-        "production": u'https://comercios.ceca.es/webapp/ConsTpvVirtWeb/ConsTpvVirtS',
-        "testing": u'https://democonsolatpvvirtual.ceca.es/webapp/ConsTpvVirtWeb/ConsTpvVirtS'
+        "production": u'https://pgw.ceca.es/tpvweb/anulaciones/anular.action',
+        "testing": u'https://tpv.ceca.es/tpvweb/anulaciones/anular.action'
     }
 
     # Los códigos de idioma a utilizar son los siguientes
