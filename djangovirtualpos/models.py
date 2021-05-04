@@ -140,6 +140,9 @@ class VPOSPaymentOperation(models.Model):
     virtual_point_of_sale = models.ForeignKey("VirtualPointOfSale", parent_link=True, related_name="payment_operations", null=False)
     environment = models.CharField(max_length=255, choices=VIRTUALPOS_STATE_TYPES, default="", blank=True, verbose_name="Entorno del TPV")
 
+    aplicacion = models.CharField(max_length=255, null=True, blank=True)
+    modelo = models.CharField(max_length=255, null=True, blank=True)
+
     @property
     def vpos(self):
         return self.virtual_point_of_sale
@@ -689,8 +692,13 @@ class VPOSCeca(VirtualPointOfSale):
 
     # El TPV de CECA consta de dos entornos en funcionamiento, uno para pruebas y otro para producción
     CECA_URL = {
-        "production": u'https://comercios.ceca.es/webapp/ConsTpvVirtWeb/ConsTpvVirtS',
-        "testing": u'https://democonsolatpvvirtual.ceca.es/webapp/ConsTpvVirtWeb/ConsTpvVirtS'
+        "production": "https://pgw.ceca.es/tpvweb/tpv/compra.action",
+        "testing":"https://tpv.ceca.es/tpvweb/tpv/compra.action"
+    }
+
+    CECA_REFUND_URL = {
+        "production": u'https://pgw.ceca.es/tpvweb/anulaciones/anular.action',
+        "testing": u'https://tpv.ceca.es/tpvweb/anulaciones/anular.action'
     }
 
     # Los códigos de idioma a utilizar son los siguientes
@@ -781,7 +789,7 @@ class VPOSCeca(VirtualPointOfSale):
     ## Paso 1.3. Obtiene los datos de pago
     ## Este método será el que genere los campos del formulario de pago
     ## que se rellenarán desde el cliente (por Javascript)
-    def getPaymentFormData(self):
+    def getPaymentFormData(self, reference_number=None):
         data = {
             # Identifica al comercio, será facilitado por la caja
             "MerchantID": self.merchant_id,
@@ -932,7 +940,7 @@ class VPOSCeca(VirtualPointOfSale):
     ####################################################################
     ## Paso R1. (Refund) Configura el TPV en modo devolución
     def refund(self, operation_sale_code, refund_amount, description):
-        self.url = self.CECA_URL[self.parent.environment]
+        self.url = self.CECA_REFUND_URL[self.parent.environment]
 
         # IMPORTANTE: Este es el código de operación para hacer devoluciones.
         self.transaction_type = 3
@@ -997,8 +1005,10 @@ class VPOSCeca(VirtualPointOfSale):
 
             # Cuando en el DOM del documento HTML aparece un mensaje de error.
             if refund_operacion_ko:
-                dlprint(refund_operacion_ok)
-                dlprint(u'Error realizando la operación')
+                error_msg = xml.find(u'ERROR_DESC').get_text()
+                dlprint(refund_operacion_ko)
+                dlprint(u'Error realizando la operación.')
+                dlprint(error_msg)
                 status = False
 
             # Cuando en el DOM del documento HTML aparece un mensaje de ok.
@@ -1074,7 +1084,6 @@ class VPOSCeca(VirtualPointOfSale):
             exponente=self.exponente,
             referencia=self.referencia,
         )
-        signature = "{signature}SHA2".format(signature=signature)
         dlprint("\tencryption_key {0}".format(self.encryption_key))
         dlprint("\tmerchant_id {0}".format(self.merchant_id))
         dlprint("\tacquirer_bin {0}".format(self.acquirer_bin))
