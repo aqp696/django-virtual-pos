@@ -10,7 +10,7 @@ import cgi
 # Sistema de depuración
 
 from bs4 import BeautifulSoup
-from debug import dlprint
+from .debug import dlprint
 from django.core.exceptions import ObjectDoesNotExist
 
 from django.db import models
@@ -22,10 +22,10 @@ from django.http import HttpResponse
 from django.utils import timezone
 
 from django.shortcuts import redirect
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 import random
-import urllib2, urllib
-import urlparse
+from urllib.parse import parse_qs, urlencode
+from urllib.request import Request, urlopen
 import hashlib
 from django.utils import translation
 from Crypto.Cipher import DES3
@@ -334,7 +334,7 @@ class VirtualPointOfSale(models.Model):
             self.delegated = delegated_class.objects.get(parent_id=self.id)
         except delegated_class.DoesNotExist as e:
             raise ValueError(
-                unicode(e) + u" No existe ningún vpos del tipo {0} con el identificador {1}".format(self.type, self.id))
+                str(e) + u" No existe ningún vpos del tipo {0} con el identificador {1}".format(self.type, self.id))
 
         # Necesito los datos dinámicos de mi padre, que es un objeto de
         # la clase Tpv, si usásemos directamente desde el delegated
@@ -2822,7 +2822,7 @@ class VPOSPaypal(VirtualPointOfSale):
 
         dlprint("El operation number no existía")
         token_url = self.paypal_url[self.parent.environment][self.endpoint]
-        dlprint("Attribute paypal_url " + unicode(self.paypal_url))
+        dlprint("Attribute paypal_url " + str(self.paypal_url))
         dlprint("Endpoint {0}".format(self.endpoint))
         dlprint("Enviroment {0}".format(self.parent.environment))
         dlprint("URL de envío {0}".format(token_url))
@@ -2850,7 +2850,7 @@ class VPOSPaypal(VirtualPointOfSale):
             # Especifíca la acción
             "PAYMENTREQUEST_0_PAYMENTACTION": self.PaymentRequest_0_PaymentAction,
             # Especifica la descripción de la venta
-            "L_PAYMENTREQUEST_0_NAME0": unicode(self.parent.operation.description).encode('utf-8'),
+            "L_PAYMENTREQUEST_0_NAME0": str(self.parent.operation.description, 'utf-8'),
             # Especifica el importe final de la venta
             "L_PAYMENTREQUEST_0_AMT0": self.parent.operation.amount
         }
@@ -2858,19 +2858,19 @@ class VPOSPaypal(VirtualPointOfSale):
         dlprint(query_args)
 
         # Recogemos los datos
-        data = urllib.urlencode(query_args)
+        data = urlencode(query_args)
         dlprint("Recogemos los datos")
         dlprint(data)
         # Enviamos la petición HTTP POST
-        request = urllib2.Request(token_url, data)
+        request = Request(token_url, data)
         # Recogemos la respuesta dada, que vendrá en texto plano
-        response = urllib2.urlopen(request)
+        response = urlopen(request)
         res_string = response.read()
 
         dlprint("Paypal responde")
         dlprint("Respuesta PayPal: " + res_string)
 
-        res = urlparse.parse_qs(res_string)
+        res = parse_qs(res_string)
 
         # Comprobamos que exista un ACK y que este no contenga el valor "Failure"
         if "ACK" in res and res["ACK"][0] == "Failure":
@@ -2974,15 +2974,15 @@ class VPOSPaypal(VirtualPointOfSale):
             'PAYMENTREQUEST_0_AMT': self.parent.operation.amount,
         }
 
-        data = urllib.urlencode(query_args)
+        data = urlencode(query_args)
         # Realizamos una petición HTTP POST
         api_url = self.paypal_url[self.parent.environment]["api"]
-        request = urllib2.Request(api_url, data)
+        request = Request(api_url, data)
 
         # Almacenamos la respuesta dada por PayPal
-        response = urllib2.urlopen(request)
+        response = urlopen(request)
         res_string = response.read()
-        res = urlparse.parse_qs(res_string)
+        res = parse_qs(res_string)
 
         # Comprobamos que haya un ACK y que no tenga el valor de "Failure"
         if "ACK" in res and res["ACK"][0] == "Failure":
@@ -3332,10 +3332,10 @@ class VPOSSantanderElavon(VirtualPointOfSale):
 
         # Enviamos la petición HTTP POST
         dlprint(u"Request SETTLE: {0}".format(xml_string))
-        request = urllib2.Request(self.url['remote'], xml_string, headers={"Content-Type": "application/xml"})
+        request = Request(self.url['remote'], xml_string, headers={"Content-Type": "application/xml"})
 
         # Recogemos la respuesta dada, que vendrá en texto plano
-        response = urllib2.urlopen(request)
+        response = urlopen(request)
         response_string = response.read().decode("utf8")
         dlprint(u"Response SETTLE: {0}".format(response_string))
 
@@ -3399,10 +3399,10 @@ class VPOSSantanderElavon(VirtualPointOfSale):
 
         # Enviamos la petición HTTP POST
         dlprint(u"Request VOID: {0}".format(xml_string))
-        request = urllib2.Request(self.url['remote'], xml_string, headers={"Content-Type": "application/xml"})
+        request = Request(self.url['remote'], xml_string, headers={"Content-Type": "application/xml"})
 
         # Recogemos la respuesta dada, que vendrá en texto plano
-        response = urllib2.urlopen(request)
+        response = urlopen(request)
         response_string = response.read().decode("utf8")
         dlprint(u"Response VOID: {0}".format(response_string))
 
@@ -3631,13 +3631,13 @@ class VPOSBitpay(VirtualPointOfSale):
         url = self.bitpay_url[self.parent.environment]["create_invoice"]
 
         post = json.dumps(params)
-        req = urllib2.Request(url)
+        req = Request(url)
         base64string = base64.encodestring(self.api_key).replace('\n', '')
         req.add_header("Authorization", "Basic %s" % base64string)
         req.add_header("Content-Type", "application/json")
         req.add_header("Content-Length", len(post))
 
-        json_response = urllib2.urlopen(req, post)
+        json_response = urlopen(req, post)
         response = json.load(json_response)
 
         dlprint(u"Parametros que enviamos a Bitpay para crear la operación")
