@@ -2,6 +2,12 @@
 Django module that abstracts the flow of several virtual points of sale.
 
 # Releases
+## 1.6.13
+- Django 3.x compatibility
+
+## 1.6.12
+- Ceca refund implementation
+
 ## 1.6.11
 - On refund operations, select the 'completed' VPOSPaymentOperation matching the sale_code if there are more than one
 
