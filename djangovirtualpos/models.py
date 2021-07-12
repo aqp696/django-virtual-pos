@@ -137,7 +137,7 @@ class VPOSPaymentOperation(models.Model):
     last_update_datetime = models.DateTimeField(verbose_name="Fecha de última actualización del objeto")
 
     type = models.CharField(max_length=16, choices=VPOS_TYPES, default="", verbose_name="Tipo de TPV")
-    virtual_point_of_sale = models.ForeignKey("VirtualPointOfSale", parent_link=True, related_name="payment_operations", null=False)
+    virtual_point_of_sale = models.ForeignKey("VirtualPointOfSale", on_delete=models.DO_NOTHING, parent_link=True, related_name="payment_operations", null=False)
     environment = models.CharField(max_length=255, choices=VIRTUALPOS_STATE_TYPES, default="", blank=True, verbose_name="Entorno del TPV")
 
     aplicacion = models.CharField(max_length=255, null=True, blank=True)
@@ -654,7 +654,7 @@ class VPOSCeca(VirtualPointOfSale):
     # Al poner el signo "+" como "related_name" evitamos que desde el padre
     # se pueda seguir la relación hasta aquí (ya que cada uno de las clases
     # que heredan de ella estará en una tabla y sería un lío).
-    parent = models.OneToOneField(VirtualPointOfSale, parent_link=True, related_name="+", null=False, db_column="vpos_id")
+    parent = models.OneToOneField(VirtualPointOfSale, on_delete=models.DO_NOTHING, parent_link=True, related_name="+", null=False, db_column="vpos_id")
 
     # Identifica al comercio, será facilitado por la caja en el proceso de alta
     merchant_id = models.CharField(max_length=9, null=False, blank=False, verbose_name="MerchantID",
@@ -1143,7 +1143,7 @@ OPERATIVE_TYPES = (
 class VPOSRedsys(VirtualPointOfSale):
     """Información de configuración del TPV Virtual Redsys"""
     ## Todo TPV tiene una relación con los datos generales del TPV
-    parent = models.OneToOneField(VirtualPointOfSale, parent_link=True, related_name="+", null=False, db_column="vpos_id")
+    parent = models.OneToOneField(VirtualPointOfSale, on_delete=models.DO_NOTHING, parent_link=True, related_name="+", null=False, db_column="vpos_id")
 
     # Expresión regular usada en la identificación del servidor
     regex_number = re.compile("^\d*$")
@@ -2730,7 +2730,7 @@ class VPOSRedsys(VirtualPointOfSale):
 class VPOSPaypal(VirtualPointOfSale):
     """Información de configuración del TPV Virtual PayPal """
     ## Todo TPV tiene una relación con los datos generales del TPV
-    parent = models.OneToOneField(VirtualPointOfSale, parent_link=True, related_name="+", null=False, db_column="vpos_id")
+    parent = models.OneToOneField(VirtualPointOfSale, on_delete=models.DO_NOTHING, parent_link=True, related_name="+", null=False, db_column="vpos_id")
 
     # nombre de usuario para la API de Paypal
     API_username = models.CharField(max_length=60, null=False, blank=False, verbose_name="API_username")
@@ -3047,7 +3047,7 @@ class VPOSSantanderElavon(VirtualPointOfSale):
     # Al poner el signo "+" como "related_name" evitamos que desde el padre
     # se pueda seguir la relación hasta aquí (ya que cada uno de las clases
     # que heredan de ella estará en una tabla y sería un lío).
-    parent = models.OneToOneField(VirtualPointOfSale, parent_link=True, related_name="+", null=False, db_column="vpos_id")
+    parent = models.OneToOneField(VirtualPointOfSale, on_delete=models.DO_NOTHING, parent_link=True, related_name="+", null=False, db_column="vpos_id")
 
     # Identifica al comercio, será facilitado por la caja en el proceso de alta
     merchant_id = models.CharField(max_length=50, null=False, blank=False, verbose_name="MerchantID",
@@ -3566,7 +3566,7 @@ class VPOSBitpay(VirtualPointOfSale):
     # Al poner el signo "+" como "related_name" evitamos que desde el padre
     # se pueda seguir la relación hasta aquí (ya que cada uno de las clases
     # que heredan de ella estará en una tabla y sería un lío).
-    parent = models.OneToOneField(VirtualPointOfSale, parent_link=True, related_name="+", null=False, db_column="vpos_id")
+    parent = models.OneToOneField(VirtualPointOfSale, on_delete=models.DO_NOTHING, parent_link=True, related_name="+", null=False, db_column="vpos_id")
     testing_api_key = models.CharField(max_length=512, null=True, blank=True, verbose_name="API Key de Bitpay para entorno de test")
     production_api_key = models.CharField(max_length=512, null=False, blank=False, verbose_name="API Key de Bitpay para entorno de producción")
     currency = models.CharField(max_length=3, choices=CURRENCIES, default='EUR', null=False, blank=False, verbose_name="Moneda (EUR, USD, BTC)")
