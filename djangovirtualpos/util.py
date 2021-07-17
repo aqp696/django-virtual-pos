@@ -28,7 +28,7 @@ def as_server_datetime(_datetime):
 
 def localize_datetime(_datetime):
     """Localiza la marca de tiempo en función de la zona de tiempo del servidor. Sólo y exclusivamente si no está localizada ya."""
-    if timezone.is_naive(_datetime):
+    if settings.USE_TZ and timezone.is_naive(_datetime):
         return as_server_datetime(_datetime)
     return _datetime
 
